@@ -49,6 +49,8 @@ COMIDA com = { {0,0}, NADA };
 
 PEDACITOS* NuevaSerpiente(int);
 void DibujarSerpiente(GtkWidget *, const PEDACITOS *);
+void DibujarComida(GtkWidget *, const COMIDA);
+void Dibujar(GtkWidget *, const PEDACITOS *, const COMIDA);
 int MoverSerpiente(PEDACITOS *, int, GtkWidget *, int);
 PEDACITOS* AjustarSerpiente(PEDACITOS *, int *, int, GtkWidget *);
 int Colisionar(const PEDACITOS *, int);
@@ -60,6 +62,7 @@ static int cuenta = 0;
 static int bandera = 0;
 extern PEDACITOS *serpiente;
 GtkWidget *windowAux = NULL;
+GtkWidget *message_dialog;
 
 void
 on_window1_destroy                     (GtkObject       *object,
@@ -74,7 +77,7 @@ on_window1_key_press_event             (GtkWidget       *widget,
                                         GdkEventKey     *event,
                                         gpointer         user_data)
 {
-	GtkWidget *message_dialog;
+	//GtkWidget *message_dialog;
 	message_dialog = gtk_message_dialog_new (user_data, GTK_DIALOG_MODAL, 
 											GTK_MESSAGE_ERROR, 
 											GTK_BUTTONS_OK, 
@@ -86,72 +89,64 @@ on_window1_key_press_event             (GtkWidget       *widget,
 		{
 		if(bandera != 1){
 			if (!MoverSerpiente(serpiente, ARRIBA, widget, tams)) {
-				//KillTimer(hWnd, IDT_TIMER1);
 				gtk_dialog_run(GTK_DIALOG(message_dialog));
 				gtk_widget_destroy(message_dialog);          
 			}
 		}
 		
-		/*if (Comer(serpiente, tams)) {
-			serpiente = AjustarSerpiente(serpiente, &tams, com.tipo, rect);
+		if (Comer(serpiente, tams)) {
+			serpiente = AjustarSerpiente(serpiente, &tams, com.tipo, widget);
 			com.tipo = NADA;
 		}
-		InvalidateRect(hWnd, NULL, TRUE);*/
-		DibujarSerpiente(widget, serpiente);
+		Dibujar(widget, serpiente, com);
 		break;
 		}
 	case GDK_Down:
 		{
-			if(bandera != 1){
-				if (!MoverSerpiente(serpiente, ABAJO, widget, tams)) {
-			//KillTimer(hWnd, IDT_TIMER1);
-			gtk_dialog_run(GTK_DIALOG(message_dialog));
-			gtk_widget_destroy(message_dialog);    
-		}
+		if(bandera != 1){
+			if (!MoverSerpiente(serpiente, ABAJO, widget, tams)) {
+				gtk_dialog_run(GTK_DIALOG(message_dialog));
+				gtk_widget_destroy(message_dialog);    
 			}
+		}
 		
-		/*if (Comer(serpiente, tams)) {
-			serpiente = AjustarSerpiente(serpiente, &tams, com.tipo, rect);
+		if (Comer(serpiente, tams)) {
+			serpiente = AjustarSerpiente(serpiente, &tams, com.tipo, widget);
 			com.tipo = NADA;
 		}
-		InvalidateRect(hWnd, NULL, TRUE);*/
-		DibujarSerpiente(widget, serpiente);
+		Dibujar(widget, serpiente, com);
 		break;
 		}
 	case GDK_Left:
 		{
-			if(bandera != 1){
-				if (!MoverSerpiente(serpiente, IZQ, widget, tams)) {
-			//KillTimer(hWnd, IDT_TIMER1);
-			gtk_dialog_run(GTK_DIALOG(message_dialog));
-			gtk_widget_destroy(message_dialog);    
-		}
+		if(bandera != 1){
+			if (!MoverSerpiente(serpiente, IZQ, widget, tams)) {
+				gtk_dialog_run(GTK_DIALOG(message_dialog));
+				gtk_widget_destroy(message_dialog);    
 			}
+		}
 		
-		/*if (Comer(serpiente, tams)) {
-			serpiente = AjustarSerpiente(serpiente, &tams, com.tipo, rect);
+		if (Comer(serpiente, tams)) {
+			serpiente = AjustarSerpiente(serpiente, &tams, com.tipo, widget);
 			com.tipo = NADA;
 		}
-		InvalidateRect(hWnd, NULL, TRUE);*/
-		DibujarSerpiente(widget, serpiente);
+		Dibujar(widget, serpiente, com);
 		break;
 		}
 	case GDK_Right:
 		{
-			if(bandera != 1){
-				if (!MoverSerpiente(serpiente, DER, widget, tams)) {
-			//KillTimer(hWnd, IDT_TIMER1);
-			gtk_dialog_run(GTK_DIALOG(message_dialog));
-			gtk_widget_destroy(message_dialog);    
+		if(bandera != 1){
+			if (!MoverSerpiente(serpiente, DER, widget, tams)) {
+				gtk_dialog_run(GTK_DIALOG(message_dialog));
+				gtk_widget_destroy(message_dialog);    
+			}
 		}
-				}
 		
-		/*if (Comer(serpiente, tams)) {
-			serpiente = AjustarSerpiente(serpiente, &tams, com.tipo, rect);
+		if (Comer(serpiente, tams)) {
+			serpiente = AjustarSerpiente(serpiente, &tams, com.tipo, widget);
 			com.tipo = NADA;
 		}
-		InvalidateRect(hWnd, NULL, TRUE);*/
-		DibujarSerpiente(widget, serpiente);
+		Dibujar(widget, serpiente, com);
 		break;
 		}
 	}
@@ -167,9 +162,10 @@ on_nuevo1_activate                     (GtkMenuItem     *menuitem,
 		free(serpiente);
 		tams = 5;
 		cuenta = 0;
+		com.tipo = NADA;
 		bandera = 0;
 		serpiente = NuevaSerpiente(tams);
-		DibujarSerpiente(windowAux, serpiente);
+		Dibujar(windowAux, serpiente, com);
 	}
 }
 
@@ -204,7 +200,7 @@ on_drawingarea1_configure_event        (GtkWidget       *widget,
 							widget->allocation.width,
 							widget->allocation.height,
 							-1);
-	DibujarSerpiente(widget, serpiente);
+	Dibujar(widget, serpiente, com);
 	
   return FALSE;
 }
@@ -226,51 +222,39 @@ on_drawingarea1_expose_event           (GtkWidget       *widget,
 
 void Trazar(GtkWidget *widget)
 {
-	//GetClientRect(hWnd, &rect);
-	//GdkRectangle update_rect;
-    //GtkWidget *where_to_draw = lookup_widget(widget,"drawingarea1");
-    if(bandera != 1){
+	GtkWidget *rect = lookup_widget(widget,"drawingarea1");
+	
+	if(bandera != 1){
 		if (!MoverSerpiente(serpiente, serpiente[tams - 1].dir, widget, tams)) {
-	/*	
-	 * KillTimer(hWnd, IDT_TIMER1);
-		MessageBox(hWnd, L"Ya se murió, F", L"Fin del juego",
-			MB_OK | MB_ICONINFORMATION);*/
-	}
+			gtk_dialog_run(GTK_DIALOG(message_dialog));
+			gtk_widget_destroy(message_dialog);
 		}
 	
-	/*
-	cuenta++;
-	if (cuenta == 15) {
-		if (rand() % 100 < 80) {
-			com.tipo = CRECE;
+		cuenta++;
+		if (cuenta == 15) {
+			if (rand() % 100 < 80) {
+				com.tipo = CRECE;
+			}
+			else {
+				com.tipo = ACHICA;
+			}
+			com.pos.x = rand() % rect->allocation.width / TAMSERP;
+			com.pos.y = rand() % rect->allocation.height / TAMSERP;
+			cuenta = 0;
 		}
-		else {
-			com.tipo = ACHICA;
-		}
-		com.pos.x = rand() % rect.right / TAMSERP;
-		com.pos.y = rand() % rect.bottom / TAMSERP;
-		cuenta = 0;
-	}
 
-	if (Comer(serpiente, tams)){
-		serpiente = AjustarSerpiente(serpiente, &tams, com.tipo, rect);
-		com.tipo = NADA;
+		if (Comer(serpiente, tams)){
+			serpiente = AjustarSerpiente(serpiente, &tams, com.tipo, widget);
+			com.tipo = NADA;
+		}
 	}
-	InvalidateRect(hWnd, NULL, TRUE);*/
-	DibujarSerpiente(widget, serpiente);
+	Dibujar(widget, serpiente, com);
 }
 
 void DibujarSerpiente(GtkWidget * widget, const PEDACITOS *serpiente)
 {
-	GdkRectangle update_rect;
-    GtkWidget *where_to_draw = lookup_widget(widget,"drawingarea1");
     int i = 1;
     
-    gdk_draw_rectangle(pixmap, widget->style->white_gc,
-              TRUE,
-              0, 0,
-              where_to_draw->allocation.width,
-              where_to_draw->allocation.height);    
 	//se traza la cola según la dirección
     switch (serpiente[0].dir)
     {
@@ -439,11 +423,57 @@ void DibujarSerpiente(GtkWidget * widget, const PEDACITOS *serpiente)
 			break;
 	}
 
-    update_rect.x = 0;
+    /*update_rect.x = 0;
     update_rect.y = 0;
     update_rect.width = where_to_draw->allocation.width;
     update_rect.height = where_to_draw->allocation.height;
-    gtk_widget_draw(where_to_draw, &update_rect);  
+    gtk_widget_draw(where_to_draw, &update_rect);  */
+}
+
+void DibujarComida(GtkWidget *widget, const COMIDA com)
+{
+	if (com.tipo == CRECE) {
+		gdk_draw_rectangle(pixmap, 
+			  widget->style->black_gc,
+			  FALSE,
+			  com.pos.x * TAMSERP,
+			  com.pos.y * TAMSERP,
+			  TAMSERP,
+			  TAMSERP);
+	}
+	else {
+		if (com.tipo == ACHICA) {
+			gdk_draw_arc(pixmap, widget->style->black_gc, 
+				FALSE,
+				com.pos.x * TAMSERP, 
+				com.pos.y * TAMSERP,
+				TAMSERP,
+				TAMSERP,
+				0, (64*360));
+		}
+	}
+}
+
+void Dibujar(GtkWidget *widget, const PEDACITOS *serpiente, const COMIDA com)
+{
+	GdkRectangle update_rect;
+    GtkWidget *where_to_draw = lookup_widget(widget,"drawingarea1");
+    
+    gdk_draw_rectangle(pixmap, widget->style->white_gc,
+              TRUE,
+              0, 0,
+              where_to_draw->allocation.width,
+              where_to_draw->allocation.height);
+              
+	DibujarSerpiente(widget, serpiente);
+	DibujarComida(widget, com);
+              
+	update_rect.x = 0;
+    update_rect.y = 0;
+    update_rect.width = where_to_draw->allocation.width;
+    update_rect.height = where_to_draw->allocation.height;
+    gtk_widget_draw(where_to_draw, &update_rect);
+    
 }
 
 PEDACITOS *NuevaSerpiente(int tams){
